@@ -52,6 +52,18 @@ activities = {
         "max_participants": 15,
         "participants": []
     },
+    "Swimming Club": {
+        "description": "Learn swimming techniques and participate in competitions",
+        "schedule": "Mondays and Thursdays, 4:00 PM - 5:30 PM",
+        "max_participants": 20,
+        "participants": []
+    },
+    "Tennis Club": {
+        "description": "Practice tennis and compete in school tournaments",
+        "schedule": "Wednesdays and Saturdays, 3:00 PM - 5:00 PM",
+        "max_participants": 10,
+        "participants": []
+    },
     # New artistic activities
     "Drama Club": {
         "description": "Explore acting and participate in school plays",
@@ -62,6 +74,18 @@ activities = {
     "Painting Workshop": {
         "description": "Learn painting techniques and create your own artwork",
         "schedule": "Saturdays, 10:00 AM - 12:00 PM",
+        "max_participants": 15,
+        "participants": []
+    },
+    "Music Band": {
+        "description": "Join the school band and practice musical instruments",
+        "schedule": "Tuesdays and Fridays, 3:30 PM - 5:00 PM",
+        "max_participants": 25,
+        "participants": []
+    },
+    "Photography Club": {
+        "description": "Learn photography skills and participate in photo exhibitions",
+        "schedule": "Thursdays, 4:00 PM - 5:30 PM",
         "max_participants": 15,
         "participants": []
     },
@@ -76,6 +100,18 @@ activities = {
         "description": "Develop public speaking skills and compete in debates",
         "schedule": "Fridays, 4:00 PM - 5:30 PM",
         "max_participants": 18,
+        "participants": []
+    },
+    "Science Club": {
+        "description": "Explore scientific experiments and participate in science fairs",
+        "schedule": "Wednesdays, 3:30 PM - 5:00 PM",
+        "max_participants": 20,
+        "participants": []
+    },
+    "Book Club": {
+        "description": "Discuss books and share reading experiences",
+        "schedule": "Mondays, 4:00 PM - 5:00 PM",
+        "max_participants": 15,
         "participants": []
     }
 }
