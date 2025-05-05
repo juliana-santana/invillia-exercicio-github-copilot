@@ -10,6 +10,9 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 import os
 from pathlib import Path
+from threading import Lock
+
+lock = Lock()  # Lock para evitar condições de corrida
 
 app = FastAPI(title="Mergington High School API",
               description="API for viewing and signing up for extracurricular activities")
@@ -130,17 +133,22 @@ def get_activities():
 @app.post("/activities/{activity_name}/signup")
 def signup_for_activity(activity_name: str, email: str):
     """Sign up a student for an activity"""
-    # Validate activity exists
-    if activity_name not in activities:
-        raise HTTPException(status_code=404, detail="Activity not found")
+    with lock:  # Garante que apenas uma thread execute este bloco por vez
+        # Validar se a atividade existe
+        if activity_name not in activities:
+            raise HTTPException(status_code=404, detail="Activity not found")
 
-    # Get the specific activity
-    activity = activities[activity_name]
+        # Obter a atividade específica
+        activity = activities[activity_name]
 
-    # Validate if the student is already signed up
-    if email in activity["participants"]:
-        raise HTTPException(status_code=400, detail="Student is already signed up for this activity")
+        # Validar se o aluno já está inscrito
+        if email in activity["participants"]:
+            raise HTTPException(status_code=400, detail="Student is already signed up for this activity")
 
-    # Add student
-    activity["participants"].append(email)
-    return {"message": f"Signed up {email} for {activity_name}"}
+        # Validar se a atividade atingiu o limite de participantes
+        if len(activity["participants"]) >= activity["max_participants"]:
+            raise HTTPException(status_code=400, detail="Activity is already full")
+
+        # Adicionar o aluno
+        activity["participants"].append(email)
+        return {"message": f"Signed up {email} for {activity_name}"}
