@@ -10,6 +10,9 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 import os
 from pathlib import Path
+from threading import Lock
+
+lock = Lock()  # Lock para evitar condições de corrida
 
 app = FastAPI(title="Mergington High School API",
               description="API for viewing and signing up for extracurricular activities")
@@ -39,41 +42,80 @@ activities = {
         "max_participants": 30,
         "participants": ["john@mergington.edu", "olivia@mergington.edu"]
     },
+    # New sports activities
     "Soccer Team": {
-        "description": "Join the school soccer team and compete in local tournaments",
+        "description": "Join the school soccer team and compete in tournaments",
         "schedule": "Tuesdays and Thursdays, 4:00 PM - 5:30 PM",
         "max_participants": 22,
-        "participants": ["lucas@mergington.edu", "mia@mergington.edu"]
+        "participants": []
     },
     "Basketball Team": {
-        "description": "Practice basketball and participate in inter-school competitions",
+        "description": "Practice basketball and participate in interschool competitions",
         "schedule": "Wednesdays and Fridays, 3:00 PM - 4:30 PM",
         "max_participants": 15,
-        "participants": ["ethan@mergington.edu", "ava@mergington.edu"]
+        "participants": []
     },
-    "Art Club": {
-        "description": "Explore your creativity through painting, drawing, and sculpture",
-        "schedule": "Mondays, 3:30 PM - 5:00 PM",
-        "max_participants": 15,
-        "participants": ["isabella@mergington.edu", "sophia@mergington.edu"]
-    },
-    "Drama Club": {
-        "description": "Participate in plays and improve your acting skills",
-        "schedule": "Thursdays, 4:00 PM - 5:30 PM",
+    "Swimming Club": {
+        "description": "Learn swimming techniques and participate in competitions",
+        "schedule": "Mondays and Thursdays, 4:00 PM - 5:30 PM",
         "max_participants": 20,
-        "participants": ["liam@mergington.edu", "amelia@mergington.edu"]
+        "participants": []
     },
-    "Math Club": {
-        "description": "Solve challenging math problems and prepare for math competitions",
-        "schedule": "Wednesdays, 3:30 PM - 4:30 PM",
+    "Tennis Club": {
+        "description": "Practice tennis and compete in school tournaments",
+        "schedule": "Wednesdays and Saturdays, 3:00 PM - 5:00 PM",
         "max_participants": 10,
-        "participants": ["noah@mergington.edu", "emma@mergington.edu"]
+        "participants": []
+    },
+    # New artistic activities
+    "Drama Club": {
+        "description": "Explore acting and participate in school plays",
+        "schedule": "Mondays and Wednesdays, 3:30 PM - 5:00 PM",
+        "max_participants": 20,
+        "participants": []
+    },
+    "Painting Workshop": {
+        "description": "Learn painting techniques and create your own artwork",
+        "schedule": "Saturdays, 10:00 AM - 12:00 PM",
+        "max_participants": 15,
+        "participants": []
+    },
+    "Music Band": {
+        "description": "Join the school band and practice musical instruments",
+        "schedule": "Tuesdays and Fridays, 3:30 PM - 5:00 PM",
+        "max_participants": 25,
+        "participants": []
+    },
+    "Photography Club": {
+        "description": "Learn photography skills and participate in photo exhibitions",
+        "schedule": "Thursdays, 4:00 PM - 5:30 PM",
+        "max_participants": 15,
+        "participants": []
+    },
+    # New intellectual activities
+    "Math Club": {
+        "description": "Solve challenging math problems and prepare for competitions",
+        "schedule": "Thursdays, 3:30 PM - 4:30 PM",
+        "max_participants": 25,
+        "participants": []
     },
     "Debate Team": {
-        "description": "Develop public speaking and argumentation skills",
+        "description": "Develop public speaking skills and compete in debates",
         "schedule": "Fridays, 4:00 PM - 5:30 PM",
-        "max_participants": 12,
-        "participants": ["oliver@mergington.edu", "charlotte@mergington.edu"]
+        "max_participants": 18,
+        "participants": []
+    },
+    "Science Club": {
+        "description": "Explore scientific experiments and participate in science fairs",
+        "schedule": "Wednesdays, 3:30 PM - 5:00 PM",
+        "max_participants": 20,
+        "participants": []
+    },
+    "Book Club": {
+        "description": "Discuss books and share reading experiences",
+        "schedule": "Mondays, 4:00 PM - 5:00 PM",
+        "max_participants": 15,
+        "participants": []
     }
 }
 
@@ -91,17 +133,22 @@ def get_activities():
 @app.post("/activities/{activity_name}/signup")
 def signup_for_activity(activity_name: str, email: str):
     """Sign up a student for an activity"""
-    # Validate activity exists
-    if activity_name not in activities:
-        raise HTTPException(status_code=404, detail="Activity not found")
+    with lock:  # Garante que apenas uma thread execute este bloco por vez
+        # Validar se a atividade existe
+        if activity_name not in activities:
+            raise HTTPException(status_code=404, detail="Activity not found")
 
-    # Get the specificy activity
-    activity = activities[activity_name]
+        # Obter a atividade específica
+        activity = activities[activity_name]
 
-# Validate if the student is already signed up
-    if email in activity["participants"]:
-        raise HTTPException(status_code=400, detail="Student is already signed up for this activity")
-    
-    # Add student
-    activity["participants"].append(email)
-    return {"message": f"Signed up {email} for {activity_name}"}
+        # Validar se o aluno já está inscrito
+        if email in activity["participants"]:
+            raise HTTPException(status_code=400, detail="Student is already signed up for this activity")
+
+        # Validar se a atividade atingiu o limite de participantes
+        if len(activity["participants"]) >= activity["max_participants"]:
+            raise HTTPException(status_code=400, detail="Activity is already full")
+
+        # Adicionar o aluno
+        activity["participants"].append(email)
+        return {"message": f"Signed up {email} for {activity_name}"}
